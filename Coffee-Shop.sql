@@ -101,7 +101,7 @@ create table if not exists "orders" (
 "orderNumber" varchar(15) unique not null,
 "promoId" int references "promos"("id"),
 "total" numeric(12,2),
-"taxAmount" numeric(12,2) generated always as (total * 0.10) stored,
+"taxAmount" numeric(12,2) generated always as ("total" * 0.10) stored,
 "status" "orderStatus" not null,
 "deliveryAddress" text not null,
 "fullName" varchar(30) not null,
@@ -112,9 +112,9 @@ create table if not exists "orders" (
 
 create table if not exists "orderDetails" (
 "id" serial primary key,
-"produtId" int references "products"("id"),
-"produtSizeId" int references "productSize"("id"),
-"produtVariantId" int references "productVariant"("id"),
+"productId" int references "products"("id"),
+"productSizeId" int references "productSize"("id"),
+"productVariantId" int references "productVariant"("id"),
 "quantity" int not null,
 "orderId" int references "orders"("id"),
 "created_at" timestamp default now(),
@@ -129,7 +129,6 @@ create table if not exists "messages" (
 "created_at" timestamp default now(),
 "updated_at" timestamp
 );
-
 
 insert into "users" ("fullName","email","password","address","phoneNumber","role")
 values
@@ -321,6 +320,96 @@ values
 	('Foods'),
 	('Add On');
 
---insert into "productCategories" ("productId","categoryId")
---values 
---
+insert into "productCategories" ("productId","categoryId")
+values 
+	(1,2), (2,2), (3,2), (4,2), (5,2), (6,2), (7,2), (8,2), (9,2), (10,2), (11,2), (12,2),
+	(13,2), (14,2), (15,2), (16,2), (17,2), (18,4), (19,4), (20,4), (21,4), (22,4), (23,4), (24,4),
+	(25,4), (26,4), (27,4), (28,4), (29,4), (30,4), (31,4), (32,4), (33,4), (34,5), (35,5), (36,4),
+	(37,4), (38,4), (39,4), (40,4), (41,4), (42,4), (43,4), (44,4), (45,4), (46,4), (47,4), (48,5),
+	(49,4), (50,5), (51,5), (52,2), (53,5), (54,2), (55,2), (56,2), (57,2), (58,2), (59,2), (60,2),
+	(61,2), (62,5), (63,2), (64,2), (65,2), (66,2), (67,4), (68,4), (69,4), (70,4), (71,4), (72,4),
+	(73,4), (74,4), (75,4), (76,4), (77,4), (78,4), (79,4), (80,4), (81,4), (82,4), (83,4), (84,4),
+	(85,4), (86,4), (87,4), (88,4), (89,4), (90,4), (91,4), (92,4), (93,5), (94,4), (95,4), (96,4),
+	(97,4), (98,4), (1,1), (10,1), (23,1), (32,1), (47,1), (52,1), (61,1), (73,1), (81,1), (98,1);
+
+select "p"."name" as "productName", "c"."name" as "category"
+from "products" "p" 
+join "productCategories" "pc" on "p"."id" = "pc"."productId"
+join "categories" "c" on "pc"."categoryId" = "c"."id" order by "c"."name";
+
+insert into "promos" ("name", "code", "description", "percentage", "isExpired", "maximumPromo", "minimumAmount")
+values
+    ('Promo Kopi Gratis', 'FREECOFFEE', 'Dapatkan kopi gratis setiap pembelian 5 kopi.', 100, false, 10000, 25000),
+    ('Diskon 20% Kopi Latte', 'LATTE20', 'Diskon 20% untuk kopi latte pilihanmu.', 20, false, 5000, 15000),
+    ('Kopi Tarik Hemat', 'TARIK5', 'Dapatkan diskon 5% untuk setiap kopi tarik.', 5, false, 8000, 20000),
+    ('Promo Double Espresso', 'DOUBLEESP', 'Dapatkan double espresso dengan harga khusus.', 50, false, 15000, 30000),
+    ('Hari Ini Cuma 10K', 'TENKOFF', 'Hari ini semua kopi hanya 10 ribu rupiah.', 100, false, 10000, 20000),
+    ('Kopi Keju Lezat', 'CHEESEJAVA', 'Nikmati kopi keju favoritmu dengan harga khusus.', 15, false, 7500, 25000),
+    ('Kopi Vietnam Spesial', 'VIETCOFFEE', 'Dapatkan diskon spesial untuk kopi Vietnam.', 30, false, 6000, 12000),
+    ('Kopi Blue Mountain', 'BLUMTNJAVA', 'Kopi Blue Mountain dengan diskon khusus.', 25, false, 12500, 30000),
+    ('Promo Mocha Enak', 'MOCHADEL', 'Nikmati mocha lezat dengan harga hemat.', 10, false, 6000, 15000),
+    ('Espresso Gratis', 'FREEESP', 'Beli 2 espresso, dapatkan 1 espresso gratis.', 100, false, 8000, 18000);   
+
+begin;
+insert into "orders" ("userId", "orderNumber", "promoId", "total", "status", "deliveryAddress", "fullName", "email")
+values (1, 'ORDER001', 1, 0, 'on-progress', 'Jl. Merdeka No. 123, Jakarta', 'Rizky Ananda', 'rizky.ananda@gmail.com')
+returning "id";
+
+insert into "orderDetails" ("productId", "quantity", "productSizeId", "productVariantId", "orderId")
+values
+    (1, 2, 1, 1, lastval()),
+    (20, 1, 1, 1, lastval());
+
+update "orders" "o"
+set "total" = (
+    select sum("p"."basePrice" + "ps"."additionalPrice" + "pv"."additionalPrice")
+    from "orderDetails" "od"
+    join "products" "p" on "od"."productId" = "p"."id"
+    join "productSize" "ps" on "od"."productSizeId" = "ps"."id"
+    join "productVariant" "pv" on "od"."productVariantId" = "pv"."id"
+    where "od"."orderId" = lastval()
+)
+where "o"."id" = lastval();
+
+commit;
+
+
+   
+--insert into "orders" ("userId", "orderNumber", "promoId", "total", "status", "deliveryAddress", "fullName", "email")
+--values
+--    (1, 'ORDER001', 1, 200000, 'on-progress', 'Jl. Sudirman No. 123, Jakarta', 'Rizky Ananda', 'rizky.ananda@gmail.com'),
+--    (2, 'ORDER002', 2, 150000, 'delivered', 'Jl. Gatot Subroto No. 45, Surabaya', 'Siti Rahayu', 'siti.rahayu12@gmail.com'),
+--    (3, 'ORDER003', 3, 220000, 'canceled', 'Jl. Merdeka No. 67, Bandung', 'Dewi Pratiwi', 'dewi.pratiwi@gmail.com'),
+--    (4, 'ORDER004', 4, 300000, 'on-progress', 'Jl. Asia Afrika No. 89, Medan', 'Aldi Wijaya', 'aldi.wijaya2@gmail.com'),
+--    (5, 'ORDER005', 5, 40000, 'ready-to-pick', 'Jl. Hayam Wuruk No. 34, Yogyakarta', 'Putri Kusuma', 'putri.kusuma2@gmail.com'),
+--    (6, 'ORDER006', 6, 250000, 'on-progress', 'Jl. Diponegoro No. 56, Semarang', 'Budi Setiawan', 'budi.setiawan2@gmail.com'),
+--    (7, 'ORDER007', 7, 280000, 'delivered', 'Jl. Sudirman No. 123, Jakarta', 'Siti Rahmawati', 'siti.rahmawati@gmail.com'),
+--    (8, 'ORDER008', 8, 240000, 'canceled', 'Jl. Sudirman No. 123, Jakarta', 'Fauzi Pratama', 'fauzi.pratama@gmail.com'),
+--    (9, 'ORDER009', 9, 330000, 'on-progress', 'Jl. Sudirman No. 123, Jakarta', 'Anita Putri', 'anita.putri@gmail.com'),
+--    (10, 'ORDER010', 10, 180000, 'delivered', 'Jl. Sudirman No. 123, Jakarta', 'Yusuf Setiawan', 'yusuf.setiawan@gmail.com');
+--   
+--select
+--    "u"."fullName" as "User Name",
+--    "o"."orderNumber" as "Order Number",
+--    "p"."code" as "Promo Code",
+--    "o"."total" as "Total",
+--    "o"."status" as "Status",
+--    "o"."fullName" as "Full Name",
+--    "u"."email" as "Email"
+--from "orders" "o"
+--inner join "users" "u" on "o"."userId" = "u"."id"
+--left join "promos" "p" on "o"."promoId" = "p"."id";
+-- 
+--insert into "orderDetails" ("productId", "productSizeId", "productVariantId", "quantity", "orderId")
+--values
+--    (1, 1, 1, 2, 1),
+--    (2, 2, 2, 3, 2),
+--    (3, 3, 3, 1, 3),
+--    (4, 1, 4, 4, 4),
+--    (5, 2, 1, 1, 5),
+--    (6, 3, 2, 2, 6),
+--    (7, 1, 3, 3, 7),
+--    (8, 2, 4, 1, 8),
+--    (9, 3, 1, 2, 9),
+--    (10, 1, 2, 4, 10);
+
