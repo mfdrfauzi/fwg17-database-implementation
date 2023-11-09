@@ -267,3 +267,60 @@ values
 	('Birthday Package'),
 	('Cheap');
 	
+insert into "productTags"("productId","tagId")
+values
+	(1, 4), (2, 4), (3, 2), (4, 1), (5, 4), (6, 3), (7, 4), (8, 4), (9, 3), (10, 3), (11, 4),
+	(12, 2), (13, 3), (14, 2), (15, 4), (16, 4), (17, 3), (18, 4), (19, 3), (20, 2), (21, 3),
+	(22, 3), (23, 3), (24, 2), (25, 1), (26, 2), (27, 3), (28, 3), (29, 2), (30, 4), (31, 3),
+	(32, 3), (33, 4), (34, 4), (35, 2), (36, 1), (37, 3), (38, 4), (39, 1), (40, 2), (41, 1),
+	(42, 2), (43, 2), (44, 1), (45, 2), (46, 1), (47, 4), (48, 4), (49, 2), (50, 3), (51, 2),
+	(52, 4), (53, 3), (54, 3), (55, 4), (56, 1), (57, 4), (58, 3), (59, 1), (60, 4), (61, 3),
+	(62, 1), (63, 3), (64, 4), (65, 2), (66, 2), (67, 1), (68, 4), (69, 4), (70, 1), (71, 2),
+	(72, 2), (73, 4), (74, 2), (75, 1), (76, 4), (77, 3), (78, 3), (79, 1), (80, 4), (81, 3), 
+	(82, 4), (83, 4), (84, 3), (85, 3), (86, 2), (87, 1), (88, 1), (89, 3), (90, 3), (91, 2),
+	(92, 2), (93, 4), (94, 4), (95, 4), (96, 3), (97, 4), (98, 2), (1, 3),
+	(2, 3), (3, 3), (4, 4), (5, 1), (6, 3), (7, 1), (8, 2), (9, 1), (10, 1), (11, 2), (12, 3),
+	(13, 4), (14, 1), (15, 4), (16, 2), (17, 3), (18, 4), (19, 2), (20, 2), (21, 3), (22, 1),
+	(23, 4), (24, 1), (25, 2), (26, 4), (27, 4), (28, 3), (29, 3), (30, 2), (31, 1), (32, 4),
+	(33, 4), (34, 1), (35, 1), (36, 3), (37, 3), (38, 2), (39, 4), (40, 3), (41, 2), (42, 4),
+	(43, 2), (44, 4), (45, 2), (46, 4), (47, 4), (48, 2), (49, 3), (50, 3), (51, 4), (52, 1),
+	(53, 3), (54, 2), (55, 2), (56, 3), (57, 1), (58, 4), (59, 4), (60, 2), (61, 4), (62, 3),
+	(63, 2), (64, 1), (65, 4), (66, 1), (67, 3), (68, 3), (69, 1), (70, 1), (71, 4), (72, 2),
+	(73, 2), (74, 2), (75, 1), (76, 4), (77, 3), (78, 3), (79, 4), (80, 1), (81, 2), (82, 4),
+	(83, 2), (84, 3), (85, 1), (86, 3), (87, 4), (88, 2), (89, 2), (90, 4), (91, 2), (92, 3),
+	(93, 1), (94, 3), (95, 2), (96, 3), (97, 3), (98, 3);
+
+select "p"."name" as "productName", "t"."name" as "tag"
+from "products" "p" 
+join "productTags" "pt" on "p"."id" = "pt"."productId"
+join "tags" "t" on "pt"."tagId" = "t"."id" order by "p"."name";
+
+insert into "productRatings" ("productId", "rate", "reviewMessage", "userId")
+values 
+	(1, 4, 'Sangat suka dengan rasa kopinya!', 3),
+	(2, 5, 'Rasa kopi lembut dan susunya pas!', 6),
+	(3, 4, 'Saya suka dengan cita rasanya yang khas.', 10),
+	(20, 4, 'Nasi gorengnya enak dan porsi cukup besar.', 11),
+	(23, 5, 'Rendangnya empuk dan bumbunya pas.', 3),
+	(30, 4, 'Nasi uduknya gurih dan lezat.', 6),
+	(48, 5, 'Roti lapisnya enak dan lembut.', 10),
+	(83, 4, 'Browniesnya lezat dan manisnya pas.', 11),
+	(84, 4, 'Roti isi kejunya nikmat dan kejunya melimpah.', 3),
+	(96, 5, 'Kuenya enak dan strawberry segarnya luar biasa.', 6);
+
+select "p"."name" as "productName", "u"."fullName" as "customerName", "pr"."reviewMessage" as "review"
+from "products" "p" 
+join "productRatings" "pr" on "p"."id" = "pr"."productId"
+join "users" "u" on "pr"."userId" = "u"."id" order by "p"."name";
+
+insert into "categories" ("name")
+values
+	('Favorite Product'),
+	('Coffee'),
+	('Non Coffee'),
+	('Foods'),
+	('Add On');
+
+--insert into "productCategories" ("productId","categoryId")
+--values 
+--
