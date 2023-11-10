@@ -350,66 +350,124 @@ values
     ('Promo Mocha Enak', 'MOCHADEL', 'Nikmati mocha lezat dengan harga hemat.', 10, false, 6000, 15000),
     ('Espresso Gratis', 'FREEESP', 'Beli 2 espresso, dapatkan 1 espresso gratis.', 100, false, 8000, 18000);   
 
-begin;
-insert into "orders" ("userId", "orderNumber", "promoId", "total", "status", "deliveryAddress", "fullName", "email")
-values (1, 'ORDER001', 1, 0, 'on-progress', 'Jl. Merdeka No. 123, Jakarta', 'Rizky Ananda', 'rizky.ananda@gmail.com')
-returning "id";
-
-insert into "orderDetails" ("productId", "quantity", "productSizeId", "productVariantId", "orderId")
-values
-    (1, 2, 1, 1, lastval()),
-    (20, 1, 1, 1, lastval());
-
-update "orders" "o"
-set "total" = (
-    select sum("p"."basePrice" + "ps"."additionalPrice" + "pv"."additionalPrice")
-    from "orderDetails" "od"
-    join "products" "p" on "od"."productId" = "p"."id"
-    join "productSize" "ps" on "od"."productSizeId" = "ps"."id"
-    join "productVariant" "pv" on "od"."productVariantId" = "pv"."id"
-    where "od"."orderId" = lastval()
-)
-where "o"."id" = lastval();
-
-commit;
-
-
+--update 10/11/2023
    
---insert into "orders" ("userId", "orderNumber", "promoId", "total", "status", "deliveryAddress", "fullName", "email")
---values
---    (1, 'ORDER001', 1, 200000, 'on-progress', 'Jl. Sudirman No. 123, Jakarta', 'Rizky Ananda', 'rizky.ananda@gmail.com'),
---    (2, 'ORDER002', 2, 150000, 'delivered', 'Jl. Gatot Subroto No. 45, Surabaya', 'Siti Rahayu', 'siti.rahayu12@gmail.com'),
---    (3, 'ORDER003', 3, 220000, 'canceled', 'Jl. Merdeka No. 67, Bandung', 'Dewi Pratiwi', 'dewi.pratiwi@gmail.com'),
---    (4, 'ORDER004', 4, 300000, 'on-progress', 'Jl. Asia Afrika No. 89, Medan', 'Aldi Wijaya', 'aldi.wijaya2@gmail.com'),
---    (5, 'ORDER005', 5, 40000, 'ready-to-pick', 'Jl. Hayam Wuruk No. 34, Yogyakarta', 'Putri Kusuma', 'putri.kusuma2@gmail.com'),
---    (6, 'ORDER006', 6, 250000, 'on-progress', 'Jl. Diponegoro No. 56, Semarang', 'Budi Setiawan', 'budi.setiawan2@gmail.com'),
---    (7, 'ORDER007', 7, 280000, 'delivered', 'Jl. Sudirman No. 123, Jakarta', 'Siti Rahmawati', 'siti.rahmawati@gmail.com'),
---    (8, 'ORDER008', 8, 240000, 'canceled', 'Jl. Sudirman No. 123, Jakarta', 'Fauzi Pratama', 'fauzi.pratama@gmail.com'),
---    (9, 'ORDER009', 9, 330000, 'on-progress', 'Jl. Sudirman No. 123, Jakarta', 'Anita Putri', 'anita.putri@gmail.com'),
---    (10, 'ORDER010', 10, 180000, 'delivered', 'Jl. Sudirman No. 123, Jakarta', 'Yusuf Setiawan', 'yusuf.setiawan@gmail.com');
---   
+alter table "products"
+alter column "basePrice" type int using "basePrice"::int;
+
+alter table "products"
+alter column "discount" type int using "discount"::int;
+
+alter table "productSize"
+alter column "additionalPrice" type int using "additionalPrice"::int;
+
+alter table "productVariant"
+alter column "additionalPrice" type int using "additionalPrice"::int;
+
+alter table "promos"
+alter column "percentage" type int using "percentage"::int;
+
+alter table "users"
+alter column "password" type varchar(100);
+
+update "promos"
+set "isExpired" = null;
+
+--orders
+   
+insert into "orders" ("userId", "orderNumber", "total", "status", "deliveryAddress", "fullName", "email")
+values (1, 'ord1', (select "basePrice" from "products" where "id" = 32), 'on-progress', 'Jl. Merdeka No. 123, Jakarta', 'Rizky Ananda', 'rizky.ananda@gmail.com');
+
+insert into "orderDetails" ("productId", "productVariantId", "productSizeId", "quantity", "orderId")
+values (32, 1, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord1'));
+
+
+alter table "orders"
+alter column "deliveryAddress" drop not null;
+
+insert into "orders" ("userId", "orderNumber", "total", "status", "deliveryAddress", "fullName", "email")
+values 
+    (2, 'ord2', (select "basePrice" from "products" where "id" = 57), 'ready-to-pick', null, 'Siti Rahayu', 'siti.rahayu12@gmail.com'),
+    (2, 'ord3', (select "basePrice" from "products" where "id" = 40), 'ready-to-pick', null, 'Siti Rahayu', 'siti.rahayu12@gmail.com'),
+    (2, 'ord4', (select "basePrice" from "products" where "id" = 64), 'ready-to-pick', null, 'Siti Rahayu', 'siti.rahayu12@gmail.com');
+
+insert into "orderDetails" ("productId", "productVariantId", "productSizeId", "quantity", "orderId")
+values
+    (57, 1, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord2')),
+    (40, 2, 2, 1, (select "id" from "orders" where "orderNumber" = 'ord3')),
+    (64, 3, 3, 1, (select "id" from "orders" where "orderNumber" = 'ord4'));
+
+
+insert into "orders" ("userId", "orderNumber", "total", "status", "deliveryAddress", "fullName", "email")
+values (3, 'ord5', (select SUM("basePrice") from "products" where "id" in (48, 22, 12, 67, 41)), 'delivered', 'Jl. Diponegoro No. 67, Bandung', 'Dewi Pratiwi', 'dewi.pratiwi@gmail.com');
+
+insert into "orderDetails" ("productId", "productVariantId", "productSizeId", "quantity", "orderId")
+values (48, 1, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord5')),
+       (22, 2, 2, 1, (select "id" from "orders" where "orderNumber" = 'ord5')),
+       (12, 3, 3, 1, (select "id" from "orders" where "orderNumber" = 'ord5')),
+       (67, 1, 2, 1, (select "id" from "orders" where "orderNumber" = 'ord5')),
+       (41, 2, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord5'));
+
+
+insert into "orders" ("userId", "orderNumber", "total", "status", "deliveryAddress", "fullName", "email")
+values (4, 'ord6', (select SUM("basePrice") from "products" where "id" in (75, 3, 51, 35, 63)), 'ready-to-pick', null, 'Aldi Wijaya', 'aldi.wijaya2@gmail.com');
+
+insert into "orderDetails" ("productId", "productVariantId", "productSizeId", "quantity", "orderId")
+values (75, 1, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord6')),
+       (3, 2, 2, 1, (select "id" from "orders" where "orderNumber" = 'ord6')),
+       (51, 3, 3, 1, (select "id" from "orders" where "orderNumber" = 'ord6')),
+       (35, 1, 2, 1, (select "id" from "orders" where "orderNumber" = 'ord6')),
+       (63, 2, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord6'));
+
+
+insert into "orders" ("userId", "orderNumber", "total", "status", "deliveryAddress", "fullName", "email")
+values (5, 'ord7', (select SUM("basePrice") from "products" where "id" in (29, 4, 17, 58, 77)), 'on-progress', 'Jl. Surya Kencana No. 34, Semarang', 'Putri Kusuma', 'putri.kusuma2@gmail.com');
+
+insert into "orderDetails" ("productId", "productVariantId", "productSizeId", "quantity", "orderId")
+values (29, 1, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord7')),
+       (4, 2, 2, 1, (select "id" from "orders" where "orderNumber" = 'ord7')),
+       (17, 3, 3, 1, (select "id" from "orders" where "orderNumber" = 'ord7')),
+       (58, 1, 2, 1, (select "id" from "orders" where "orderNumber" = 'ord7')),
+       (77, 2, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord7'));
+
+
+insert into "orders" ("userId", "orderNumber", "total", "status", "deliveryAddress", "fullName", "email")
+values (6, 'ord8', (select SUM("basePrice") from "products" where "id" in (20, 5, 52, 7, 15)), 'delivered', 'Jl. Pahlawan No. 56, Medan', 'Budi Setiawan', 'budi.setiawan2@gmail.com');
+
+insert into "orderDetails" ("productId", "productVariantId", "productSizeId", "quantity", "orderId")
+values (20, 1, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord8')),
+       (5, 2, 2, 1, (select "id" from "orders" where "orderNumber" = 'ord8')),
+       (52, 3, 3, 1, (select "id" from "orders" where "orderNumber" = 'ord8')),
+       (7, 1, 2, 1, (select "id" from "orders" where "orderNumber" = 'ord8')),
+       (15, 2, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord8'));
+
+
+insert into "orders" ("userId", "orderNumber", "total", "status", "deliveryAddress", "fullName", "email")
+values (7, 'ord9', (select SUM("basePrice") from "products" where "id" in (28, 9, 44, 33, 21)), 'ready-to-pick', null, 'Siti Rahmawati', 'siti.rahmawati@gmail.com');
+
+insert into "orderDetails" ("productId", "productVariantId", "productSizeId", "quantity", "orderId")
+values (28, 1, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord9')),
+       (9, 2, 2, 1, (select "id" from "orders" where "orderNumber" = 'ord9')),
+       (44, 3, 3, 1, (select "id" from "orders" where "orderNumber" = 'ord9')),
+       (33, 1, 2, 1, (select "id" from "orders" where "orderNumber" = 'ord9')),
+       (21, 2, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord9'));
+
 --select
---    "u"."fullName" as "User Name",
---    "o"."orderNumber" as "Order Number",
---    "p"."code" as "Promo Code",
---    "o"."total" as "Total",
---    "o"."status" as "Status",
---    "o"."fullName" as "Full Name",
---    "u"."email" as "Email"
---from "orders" "o"
---inner join "users" "u" on "o"."userId" = "u"."id"
---left join "promos" "p" on "o"."promoId" = "p"."id";
--- 
---insert into "orderDetails" ("productId", "productSizeId", "productVariantId", "quantity", "orderId")
---values
---    (1, 1, 1, 2, 1),
---    (2, 2, 2, 3, 2),
---    (3, 3, 3, 1, 3),
---    (4, 1, 4, 4, 4),
---    (5, 2, 1, 1, 5),
---    (6, 3, 2, 2, 6),
---    (7, 1, 3, 3, 7),
---    (8, 2, 4, 1, 8),
---    (9, 3, 1, 2, 9),
---    (10, 1, 2, 4, 10);
+--    "o"."orderNumber",
+--    "u"."fullName" as "customerName",
+--    "o"."deliveryAddress",
+--    "p"."name" as "productName",
+--    "ps"."size",
+--    "pv"."name" as "variant",
+--    "od"."quantity",
+--    "o"."status",
+--    "od"."quantity" * ("p"."basePrice" + "ps"."additionalPrice" + "pv"."additionalPrice") as "totalPurchase",
+--    "o"."taxAmount"
+--from
+--    "orders" "o"
+--join "users" "u" on "o"."userId" = "u"."id"
+--join "orderDetails" "od" on "o"."id" = "od"."orderId"
+--join "products" "p" on "od"."productId" = "p"."id"
+--join "productSize" "ps" on "od"."productSizeId" = "ps"."id"
+--join "productVariant" "pv" on "od"."productVariantId" = "pv"."id";
 
