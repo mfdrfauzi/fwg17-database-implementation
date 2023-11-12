@@ -451,23 +451,44 @@ values (28, 1, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord9')),
        (44, 3, 3, 1, (select "id" from "orders" where "orderNumber" = 'ord9')),
        (33, 1, 2, 1, (select "id" from "orders" where "orderNumber" = 'ord9')),
        (21, 2, 1, 1, (select "id" from "orders" where "orderNumber" = 'ord9'));
+      
 
---select
---    "o"."orderNumber",
---    "u"."fullName" as "customerName",
---    "o"."deliveryAddress",
---    "p"."name" as "productName",
---    "ps"."size",
---    "pv"."name" as "variant",
---    "od"."quantity",
---    "o"."status",
---    "od"."quantity" * ("p"."basePrice" + "ps"."additionalPrice" + "pv"."additionalPrice") as "totalPurchase",
---    "o"."taxAmount"
---from
---    "orders" "o"
---join "users" "u" on "o"."userId" = "u"."id"
---join "orderDetails" "od" on "o"."id" = "od"."orderId"
---join "products" "p" on "od"."productId" = "p"."id"
---join "productSize" "ps" on "od"."productSizeId" = "ps"."id"
---join "productVariant" "pv" on "od"."productVariantId" = "pv"."id";
+update "orders"
+set "orderNumber" =
+    case
+        when "id" = 1 then 'ORDER-001'
+        when "id" = 2 then 'ORDER-002'
+        when "id" = 3 then 'ORDER-003'
+        when "id" = 4 then 'ORDER-004'
+        when "id" = 5 then 'ORDER-005'
+        when "id" = 6 then 'ORDER-006'
+        when "id" = 7 then 'ORDER-007'
+        when "id" = 8 then 'ORDER-008'
+        when "id" = 9 then 'ORDER-009'
+    end
+where "id" in (1, 2, 3, 4, 5, 6, 7, 8, 9);
 
+      
+select
+    "o"."orderNumber",
+    "u"."fullName" as "customerName",
+    "p"."name" as "productName",
+    "ps"."size",
+    "pv"."name" as "variant",
+    "od"."quantity",
+    "p"."basePrice" as "price",
+    "ps"."additionalPrice" + "pv"."additionalPrice" as "additional",
+    "od"."quantity" * ("p"."basePrice" + "ps"."additionalPrice" + "pv"."additionalPrice") as "totalPurchase",
+    "o"."taxAmount",
+    "o"."deliveryAddress",
+    "o"."status"
+from
+    "orders" "o"
+join "users" "u" on "o"."userId" = "u"."id"
+join "orderDetails" "od" on "o"."id" = "od"."orderId"
+join "products" "p" on "od"."productId" = "p"."id"
+join "productSize" "ps" on "od"."productSizeId" = "ps"."id"
+join "productVariant" "pv" on "od"."productVariantId" = "pv"."id"
+where "o"."orderNumber" = 'ORDER-005';
+
+select "orderNumber","total", "taxAmount", "fullName", "deliveryAddress", "status" from "orders";
