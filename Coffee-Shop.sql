@@ -24,7 +24,7 @@ create table if not exists "products" (
 "updated_at" timestamp
 );
 
-create type "sizeProduct" as enum ('small', 'medium', 'large');
+--create type "sizeProduct" as enum ('small', 'medium', 'large') || enum deleted
 create table if not exists "productSize" (
 "id" serial primary key,
 "size" "sizeProduct" not null,
@@ -489,6 +489,19 @@ join "orderDetails" "od" on "o"."id" = "od"."orderId"
 join "products" "p" on "od"."productId" = "p"."id"
 join "productSize" "ps" on "od"."productSizeId" = "ps"."id"
 join "productVariant" "pv" on "od"."productVariantId" = "pv"."id"
-where "o"."orderNumber" = 'ORDER-005';
+where "o"."id" = 5;
 
-select "orderNumber","total", "taxAmount", "fullName", "deliveryAddress", "status" from "orders";
+select "orderNumber","total", "taxAmount", "fullName", "deliveryAddress", "status" from "orders"
+
+drop type "sizeProduct" cascade
+
+alter table "productSize" add column if not exists "size" varchar(15)
+
+update "productSize" 
+set "size" = 
+	case
+		when "id" = 1 then 'small'
+		when "id" = 2 then 'medium'
+		when "id" = 3 then 'large'
+	end 
+where "id" in (1,2,3)
