@@ -8,8 +8,8 @@ create table if not exists "users" (
 "picture" text,
 "phoneNumber" varchar(15) not null,
 "role" "userRole" not null,
-"created_at" timestamp default now(),
-"updated_at" timestamp
+"createdAt" timestamp default now(),
+"updatedAt" timestamp
 );
 
 create table if not exists "products" (
@@ -20,40 +20,40 @@ create table if not exists "products" (
 "image" text,
 "discount" float,
 "isRecommended" bool,
-"created_at" timestamp default now(),
-"updated_at" timestamp
+"createdAt" timestamp default now(),
+"updatedAt" timestamp
 );
 
 --create type "sizeProduct" as enum ('small', 'medium', 'large') || enum deleted
-create table if not exists "productSize" (
+create table if not exists "product-size" (
 "id" serial primary key,
 "size" "sizeProduct" not null,
 "additionalPrice" numeric(12,2),
-"created_at" timestamp default now(),
-"updated_at" timestamp
+"createdAt" timestamp default now(),
+"updatedAt" timestamp
 );
 
 create table if not exists "productVariant" (
 "id" serial primary key,
 "name" varchar(30) not null,
 "additionalPrice" numeric(12,2),
-"created_at" timestamp default now(),
-"updated_at" timestamp
+"createdAt" timestamp default now(),
+"updatedAt" timestamp
 );
 
 create table if not exists "tags" (
 "id" serial primary key,
 "name" varchar(30) not null,
-"created_at" timestamp default now(),
-"updated_at" timestamp
+"createdAt" timestamp default now(),
+"updatedAt" timestamp
 );
 
 create table if not exists "productTags" (
 "id" serial primary key,
 "productId" int references "products"("id"),
 "tagId" int references "tags"("id"),
-"created_at" timestamp default now(),
-"updated_at" timestamp
+"createdAt" timestamp default now(),
+"updatedAt" timestamp
 );
 
 create table if not exists "productRatings" (
@@ -62,23 +62,23 @@ create table if not exists "productRatings" (
 "rate" int check (rate >= 0 and rate <= 5),
 "reviewMessage" text,
 "userId" int references "users"("id"),
-"created_at" timestamp default now(),
-"updated_at" timestamp
+"createdAt" timestamp default now(),
+"updatedAt" timestamp
 );
 
 create table if not exists "categories" (
 "id" serial primary key,
 "name" varchar(30) not null,
-"created_at" timestamp default now(),
-"updated_at" timestamp
+"createdAt" timestamp default now(),
+"updatedAt" timestamp
 );
 
 create table if not exists "productCategories" (
 "id" serial primary key,
 "productId" int references "products"("id"),
 "categoryId" int references "categories"("id"),
-"created_at" timestamp default now(),
-"updated_at" timestamp
+"createdAt" timestamp default now(),
+"updatedAt" timestamp
 );
 
 create table if not exists "promos" (
@@ -90,8 +90,8 @@ create table if not exists "promos" (
 "isExpired" bool,
 "maximumPromo" numeric(12,2) not null,
 "minimumAmount" numeric(12,2) not null,
-"created_at" timestamp default now(),
-"updated_at" timestamp
+"createdAt" timestamp default now(),
+"updatedAt" timestamp
 );
 
 create type "orderStatus" as enum ('on-progress','delivered','canceled','ready-to-pick');
@@ -106,8 +106,8 @@ create table if not exists "orders" (
 "deliveryAddress" text not null,
 "fullName" varchar(30) not null,
 "email" varchar(30) not null,
-"created_at" timestamp default now(),
-"updated_at" timestamp
+"createdAt" timestamp default now(),
+"updatedAt" timestamp
 );
 
 create table if not exists "orderDetails" (
@@ -117,8 +117,8 @@ create table if not exists "orderDetails" (
 "productVariantId" int references "productVariant"("id"),
 "quantity" int not null,
 "orderId" int references "orders"("id"),
-"created_at" timestamp default now(),
-"updated_at" timestamp
+"createdAt" timestamp default now(),
+"updatedAt" timestamp
 );
 
 create table if not exists "messages" (
@@ -126,8 +126,8 @@ create table if not exists "messages" (
 "receipentId" int references "users"("id") on delete cascade,
 "senderId" int references "users"("id") on delete cascade,
 "text" text,
-"created_at" timestamp default now(),
-"updated_at" timestamp
+"createdAt" timestamp default now(),
+"updatedAt" timestamp
 );
 
 insert into "users" ("fullName","email","password","address","phoneNumber","role")
@@ -484,11 +484,11 @@ select
     "o"."status"
 from
     "orders" "o"
-join "users" "u" on "o"."userId" = "u"."id"
-join "orderDetails" "od" on "o"."id" = "od"."orderId"
-join "products" "p" on "od"."productId" = "p"."id"
-join "productSize" "ps" on "od"."productSizeId" = "ps"."id"
-join "productVariant" "pv" on "od"."productVariantId" = "pv"."id"
+inner join "users" "u" on "o"."userId" = "u"."id"
+inner join "orderDetails" "od" on "o"."id" = "od"."orderId"
+inner join "products" "p" on "od"."productId" = "p"."id"
+inner join "productSize" "ps" on "od"."productSizeId" = "ps"."id"
+inner join "productVariant" "pv" on "od"."productVariantId" = "pv"."id"
 where "o"."id" = 5;
 
 select "orderNumber","total", "taxAmount", "fullName", "deliveryAddress", "status" from "orders"
@@ -505,3 +505,54 @@ set "size" =
 		when "id" = 3 then 'large'
 	end 
 where "id" in (1,2,3)
+
+alter table "users" alter column "password" type varchar(100)
+
+ALTER TABLE "users" ALTER COLUMN "role" DROP NOT null
+
+ALTER TABLE "productRatings"ALTER COLUMN "rate" TYPE decimal(10,1)
+
+insert into "productRatings" ("productId", "rate", "reviewMessage")
+values 
+	(4, 4.2, 'Kopi Hitam, pahitnya pas.'),
+	(5, 4.8, 'Kopi Toraja, aroma yang khas.'),
+	(6, 3.9, 'Kopi Mocha, manisnya sempurna.'),
+	(7, 4.1, 'Kopi Cappuccino dengan busa yang lembut.'),
+	(8, 4.6, 'Kopi Espresso, keasliannya terjaga.'),
+	(9, 3.0, 'Kopi Kopi Kopi, variasi rasa yang beragam.'),
+	(10, 4.3, 'Kopi Kenangan, rasanya membekas.'),
+	(11, 3.7, 'Kopi Vietnam, cita rasanya berbeda.'),
+	(12, 4.4, 'Kopi Rum Raisin, kombinasi yang menarik.'),
+	(13, 4.9, 'Kopi Blue Mountain, kualitas premium.'),
+	(14, 3.8, 'Kopi Tiramisu, rasa lezat seperti kue tiramisu.'),
+	(15, 4.7, 'Kopi Keju, perpaduan yang luar biasa.'),
+	(16, 4.5, 'Kopi Aceh Gayo, kopi lokal yang mantap.'),
+	(17, 3.6, 'Kopi Arang / Kopi Joss, pengalaman minum yang berbeda.'),
+	(18, 4.0, 'Mie Gomak, mie khas dengan rasa gurih.'),
+	(19, 4.2, 'Nasi Rawon, cita rasa yang khas.'),
+	(20, 3.9, 'Nasi Goreng, enak dan lezat.'),
+	(21, 4.1, 'Mie Ayam, mie dengan ayam yang gurih.'),
+	(22, 4.6, 'Nasi Kuning, tradisional dan lezat.'),
+	(23, 4.3, 'Nasi Rendang cabe ijo, pedas dan nikmat.'),
+	(24, 4.8, 'Nasi Ayam Geprek, ayam geprek yang menggoda.');
+	
+
+alter table "products" add column "isFavorite" bool
+
+update "products" set "isFavorite" = false
+
+SELECT 
+    "p"."id" AS "id", 
+    "p"."name" AS "productName", 
+    "p"."image" AS "image",
+    "p"."description", 
+    "p"."basePrice" AS "price", 
+    "pr"."rate" AS "rating",
+    "p"."createdAt" AS "createdAt",
+    "p"."isRecommended",
+    "p"."isFavorite"
+    FROM "products" "p"
+    LEFT JOIN "productRatings" "pr" ON "p"."id" = "pr"."productId"
+    WHERE "p"."name" ILIKE '%ko%'
+    ORDER BY "basePrice" ASC
+    LIMIT 6 OFFSET 1
